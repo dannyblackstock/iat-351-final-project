@@ -19,8 +19,6 @@ public class CameraPreview extends SurfaceView implements
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
 
-	// this array stores the pixels as hexadecimal pairs
-	private int[] pixels;
 	// This variable is responsible for getting and setting the camera settings
 	private Parameters mParam;
 	// this variable stores the camera preview size
@@ -42,20 +40,6 @@ public class CameraPreview extends SurfaceView implements
 
 		try {
 			mCamera.setPreviewDisplay(mHolder);
-			mCamera.setPreviewCallback(new PreviewCallback() {
-				@Override
-				public void onPreviewFrame(byte[] data, Camera camera) {
-					int frameHeight = camera.getParameters().getPreviewSize().height;
-					int frameWidth = camera.getParameters().getPreviewSize().width;
-					// number of pixels//transforms NV21 pixel data into RGB
-					// pixels
-					int rgb[] = new int[frameWidth * frameHeight];
-					// convertion
-					int[] myPixels = decodeYUV420SP(rgb, data, frameWidth,
-							frameHeight);
-					System.out.println(myPixels[0]);
-				}
-			});
 			mCamera.startPreview();
 		} catch (IOException e) {
 			mCamera.release();
@@ -76,7 +60,6 @@ public class CameraPreview extends SurfaceView implements
 
 			// initialize the variables
 			previewSize = mParam.getPreviewSize();
-			pixels = new int[previewSize.width * previewSize.height];
 
 			if (portrait) {
 				mParam.set("orientation", "portrait");
@@ -111,7 +94,6 @@ public class CameraPreview extends SurfaceView implements
 				Log.i("Pixels",
 						"The top right pixel has the following RGB (hexadecimal) values:"
 								+ Integer.toHexString(myPixels[0]));
-
 			}
 		});
 	}
