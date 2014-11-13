@@ -3,13 +3,16 @@ package com.example.iat351thawandroid;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Build;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -24,12 +27,16 @@ public class CameraPreview extends SurfaceView implements
 	// this variable stores the camera preview size
 	private Size previewSize;
 
-	public CameraPreview(Activity activity) {
-		super(activity); // Always necessary
-		mActivity = activity;
+	// public CameraPreview(Activity activity) {
+	public CameraPreview(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// super(activity); // Always necessary
+		// mActivity = activity;
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		if (!isInEditMode())
+			mActivity = (MainActivity) this.getContext();
 	}
 
 	@Override
@@ -78,6 +85,7 @@ public class CameraPreview extends SurfaceView implements
 
 		mCamera.startPreview();
 
+		// callback called every camera refresh that logs a pixel value
 		mCamera.setPreviewCallback(new PreviewCallback() {
 			@Override
 			public void onPreviewFrame(byte[] data, Camera camera) {
@@ -92,8 +100,9 @@ public class CameraPreview extends SurfaceView implements
 				// Output the value of the top left pixel in the preview to
 				// LogCat
 				Log.i("Pixels",
-						"The top right pixel has the following RGB (hexadecimal) values:"
-								+ Integer.toHexString(myPixels[0]));
+						"The middle pixel has the following RGB (hexadecimal) values:"
+								+ Integer
+										.toHexString(myPixels[myPixels.length / 2]));
 			}
 		});
 	}
@@ -104,12 +113,32 @@ public class CameraPreview extends SurfaceView implements
 			return;
 		}
 		mCamera.stopPreview();
+		mCamera.setPreviewCallback(null);
 		mCamera.release();
 		mCamera = null;
 	}
 
 	protected boolean isPortrait() {
 		return (mActivity.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		int action = event.getAction();
+		switch (action & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_POINTER_DOWN:
+			// multi touch!! - touch down
+			int count = event.getPointerCount(); // Number of 'fingers' in this
+													// time
+			// Output the number of fingers touched
+			// LogCat
+			Log.i("Fingers", "Number of fingers touched:" + count);
+			return true;
+			// break;
+		default:
+			return false;
+		}
+		// return super.onTouchEvent(event);
 	}
 
 	// Method from Ketai project! Not mine! See below...
