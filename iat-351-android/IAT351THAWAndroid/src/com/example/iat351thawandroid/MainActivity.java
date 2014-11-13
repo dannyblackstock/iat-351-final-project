@@ -8,6 +8,8 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(new CameraPreview(this));
+        setContentView(R.layout.activity_main);
+        CameraPreview myCameraPreview = (CameraPreview) findViewById(R.id.my_camera_preview);
+//        setContentView(new CameraPreview(this));
     }
 }
