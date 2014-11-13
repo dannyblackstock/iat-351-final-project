@@ -126,13 +126,24 @@ public class CameraPreview extends SurfaceView implements
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
 		switch (action & MotionEvent.ACTION_MASK) {
-		case MotionEvent.ACTION_POINTER_DOWN:
-			// multi touch!! - touch down
-			int count = event.getPointerCount(); // Number of 'fingers' in this
+	    case MotionEvent.ACTION_UP:
+	    case MotionEvent.ACTION_POINTER_UP:
+			// multi touch!! - touch up
+			int countD = event.getPointerCount(); // Number of 'fingers' in this
 													// time
 			// Output the number of fingers touched
 			// LogCat
-			Log.i("Fingers", "Number of fingers touched:" + count);
+			Log.i("Fingers", "Number of fingers on screen now:" + (countD-1));
+			return true;
+			// break;
+		case MotionEvent.ACTION_DOWN: 
+	    case MotionEvent.ACTION_POINTER_DOWN:
+			// multi touch!! - touch down
+			int countU = event.getPointerCount(); // Number of 'fingers' in this
+													// time
+			// Output the number of fingers touched
+			// LogCat
+			Log.i("Fingers", "Number of fingers on screen now:" + (countU));
 			return true;
 			// break;
 		default:
