@@ -3,29 +3,11 @@
   <head>
     <title>Socket.IO chat</title>
     <style>
-      /*#gradient-map {
-        z-index: -10;
-        position: absolute;
-        top: 0;
-        left: 0;
-          width: 100%;
-          height: 100%;
-        background: linear-gradient(45deg, #0F0, #F00);
+      body {
+        font-family: sans-serif;
+        font-size: 16px;
+        color: white;
       }
-
-      #gradient-map:after {
-        z-index: -9;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-          height: 100%;
-          content: "";
-        background: linear-gradient(135deg, #00F, #F00);
-        -webkit-mask: linear-gradient(white, transparent);
-        mask: linear-gradient(white, transparent);
-      }*/
-
       img {
         z-index:-8;
         position: fixed; 
@@ -34,30 +16,38 @@
         height: 100%; 
         width: 100%; 
       }
+
     </style>
   </head>
   <body>
-    <!-- <div id="gradient-map"></div> -->
     <img id="gradient-map" src="gradient-map.png">
-    <form action="">
+
+    <div>Fingers: <span id="fingerMsg"></span></div>
+    
+    <!-- <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <ul id="messages"></ul>
+    </form> -->
+    <div id="rgbMsg"></div>
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-        var pixels = [];
       var socket = io();
+      var pixels = [];
       
       $('form').submit(function() {
-        socket.emit('rgb message', $('#m').val());
+        socket.emit('rgbMsg', $('#m').val());
         $('#m').val('');
         return false;
       });
-      socket.on('rgb message', function(msg) {
-        $('#messages').append($('<li>').text(RGBtoXY(msg)));
+      socket.on('rgbMsg', function(msg) {
+        $('#rgbMsg').text(RGBtoXY(msg));
       });
+
+      $
+      socket.on('fingerMsg', function(msg) {
+        $('#fingerMsg').text(msg);
+      })
 
       $(document).ready(function() {
         var canvas = document.createElement('canvas');
@@ -94,41 +84,32 @@
         };
       });
 
-      // android RGB -> compy RGB -> 
-      // for every pixel
-      // pixel.color = asdf
-      // pixel.x/y = 1234
-
-      // for every pixel in pixels
-      // if pixel.color = incomingmessage.color
-      //   output.x = pixel.x
-      //   "x/y" = that color's pixel x/y
-      // emit "x/y"
-      // -> compy pixel location -> return location to android
-
-      Number.prototype.map=function(a,b,c,d){return c+(d-c)*((this-a)/(b-a))};
-
       function RGBtoXY (msg) {
-        var color = msg.split(","); //.textContent.split(",");
-        var r = color[0];
-        var g = color[1];
-        var b = color[2];
+        msg = msg.substring(2);
+        var color = hexToRgb(msg);
+        // var color = msg.split(","); //.textContent.split(",");
         var x = -1;
         var y = -1;
-        console.log(r+" "+g+" "+b);
+        console.log(color.r+" "+color.g+" "+color.b);
 
         // map from rgb to x,y value
         for (var i = 0; i < pixels.length; i++) {
-          if (pixels[i].r == r && pixels[i].g == g && pixels[i].b == b) {
-            // if (pixels[i].g == g) {
-              // if (pixels[i].b == b) {
-                x = pixels[i].x;
-                y = pixels[i].y;
-              // }
-            // }
+          if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
+            x = pixels[i].x;
+            y = pixels[i].y;
           };
         };
         return x + "," + y;
+      }
+
+      // http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+      function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : null;
       }
     </script>
   </body>

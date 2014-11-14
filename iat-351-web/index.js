@@ -15,8 +15,12 @@ app.get('/gradient-map.png', function(req, res){
 });
 
 io.on('connection', function(socket){
-  socket.on('rgb message', function(msg){
-    io.emit('rgb message', msg);
+  socket.on('rgbMsg', function(msg){
+    io.emit('rgbMsg', msg);
+  });
+
+  socket.on('fingerMsg', function(msg){
+  	io.emit('fingerMsg', msg);
   });
 });
 
