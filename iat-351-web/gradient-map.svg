@@ -1,0 +1,13 @@
+<svg version="1.1" id="gradient-map-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+   width="600px" height="600px" viewBox="0 0 600 600" preserveAspectRatio="none" xml:space="preserve">
+  <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="4.882813e-004" y1="600" x2="600.0005" y2="-3.273649e-005">
+    <stop  offset="0" style="stop-color:#00FF00"/>
+    <stop  offset="1" style="stop-color:#FF0000"/>
+  </linearGradient>
+  <rect fill="url(#SVGID_1_)" width="600" height="600"/>
+  <linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="4.882813e-004" y1="4.882813e-004" x2="600.0006" y2="600.0006">
+    <stop  offset="0" style="stop-color:#0000FF"/>
+    <stop  offset="1" style="stop-color:#FFFFFF;stop-opacity:0"/>
+  </linearGradient>
+  <rect fill="url(#SVGID_2_)" width="600" height="600"/>
+</svg>
