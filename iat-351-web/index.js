@@ -10,6 +10,10 @@ app.get('/gradient-map.svg', function(req, res){
   res.sendfile(__dirname + '/gradient-map.svg');
 });
 
+app.get('/gradient-map.png', function(req, res){
+  res.sendfile(__dirname + '/gradient-map.png');
+});
+
 io.on('connection', function(socket){
   socket.on('rgb message', function(msg){
     io.emit('rgb message', msg);
