@@ -1,6 +1,11 @@
 package com.example.iat351thawandroid;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,7 +26,12 @@ public class CameraPreview extends SurfaceView implements
 	private Activity mActivity;
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
-
+	private Socket socket;
+//	private String nodeServerIP = "http://207.23.222.128:3000";
+	private String nodeServerIP = "http://207.23.221.54:3000"; // Gil's
+	private int fingerCount;
+	private int[] myPixels;
+	
 	// This variable is responsible for getting and setting the camera settings
 	private Parameters mParam;
 	// this variable stores the camera preview size
@@ -37,6 +47,14 @@ public class CameraPreview extends SurfaceView implements
 		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		if (!isInEditMode())
 			mActivity = (MainActivity) this.getContext();
+		
+		// [GUREN] Creating sockets
+		try {
+			socketCreate();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -94,15 +112,16 @@ public class CameraPreview extends SurfaceView implements
 				// number of pixels//transforms NV21 pixel data into RGB pixels
 				int rgb[] = new int[frameWidth * frameHeight];
 				// conversion NV21 pixel data into RGB pixels
-				int[] myPixels = decodeYUV420SP(rgb, data, frameWidth,
+				myPixels = decodeYUV420SP(rgb, data, frameWidth,
 						frameHeight);
 
 				// Output the value of the top left pixel in the preview to
 				// LogCat
-				Log.i("Pixels",
-						"The middle pixel has the following RGB (hexadecimal) values:"
-								+ Integer
-										.toHexString(myPixels[myPixels.length / 2]));
+//				Log.i("Pixels",
+//						"The middle pixel has the following RGB (hexadecimal) values:"
+//								+ Integer
+//										.toHexString(myPixels[myPixels.length / 2]));
+				sendHex(myPixels[myPixels.length / 2]);
 			}
 		});
 	}
@@ -129,21 +148,24 @@ public class CameraPreview extends SurfaceView implements
 	    case MotionEvent.ACTION_UP:
 	    case MotionEvent.ACTION_POINTER_UP:
 			// multi touch!! - touch up
-			int countD = event.getPointerCount(); // Number of 'fingers' in this
+			fingerCount = event.getPointerCount(); // Number of 'fingers' in this
 													// time
 			// Output the number of fingers touched
 			// LogCat
-			Log.i("Fingers", "Number of fingers on screen now:" + (countD-1));
+			Log.i("fingers", "Number of fingers on screen now:" + (fingerCount-1));
+			sendFingers(fingerCount-1);
 			return true;
 			// break;
 		case MotionEvent.ACTION_DOWN: 
 	    case MotionEvent.ACTION_POINTER_DOWN:
 			// multi touch!! - touch down
-			int countU = event.getPointerCount(); // Number of 'fingers' in this
+	    	fingerCount = event.getPointerCount(); // Number of 'fingers' in this
 													// time
 			// Output the number of fingers touched
 			// LogCat
-			Log.i("Fingers", "Number of fingers on screen now:" + (countU));
+			Log.i("fingers", "Number of fingers on screen now:" + (fingerCount));
+
+			sendFingers(fingerCount);
 			return true;
 			// break;
 		default:
@@ -194,5 +216,56 @@ public class CameraPreview extends SurfaceView implements
 			}
 		}
 		return rgb;
+		
 	}
+	
+	 public void socketCreate() throws URISyntaxException{
+//			final Socket socket = IO.socket("http://localhost:3000");
+			socket = IO.socket(nodeServerIP);
+			String sockString = String.valueOf(socket);
+			Log.i("SOCKET", sockString);
+			
+			socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+				
+				public void call(Object... arg0) {
+					Log.i("SOCKET", "Socket connect");
+					System.out.println( "Hello World!" );
+					socket.emit("chat message", "hello");
+					
+				}
+			}).on("event", new Emitter.Listener() {
+
+				  
+			  public void call(Object... args) {}
+
+			}).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+				
+			  public void call(Object... args) {
+				  System.out.println( "Goodbye World!" );
+			  }
+
+			}).on("chat message", new Emitter.Listener() {
+
+				  
+			  public void call(Object... args) {
+				  System.out.println( "hello back!" );
+			  }
+
+			});
+			
+			socket.connect();
+	}
+	 
+	 public void sendFingers(int value) {
+			String valueString = String.valueOf(value);
+//			socket.emit("chat message", "Number of fingers: " + countString);
+			socket.emit("fingerMsg", valueString);
+	 }
+	 
+	 public void sendHex(Integer value) {
+			String valueString = Integer.toHexString(value);
+			Log.i("Pixels", valueString);
+//			socket.emit("chat message", "Number of fingers: " + countString);
+			socket.emit("rgbMsg", valueString);
+	 }
 }
