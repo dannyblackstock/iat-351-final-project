@@ -13,7 +13,9 @@ import com.github.nkzawa.socketio.client.Socket;
 public class App 
 {	
 	public App() throws URISyntaxException{
-		final Socket socket = IO.socket("http://localhost:3000");
+//		final Socket socket = IO.socket("http://localhost:3000");
+		final Socket socket = IO.socket("http://207.23.222.128:3000");
+		System.out.println(socket);
 		socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
 
 			public void call(Object... arg0) {

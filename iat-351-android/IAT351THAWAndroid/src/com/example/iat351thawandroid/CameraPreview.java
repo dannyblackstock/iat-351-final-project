@@ -1,6 +1,11 @@
 package com.example.iat351thawandroid;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
 import android.app.Activity;
 import android.content.Context;
@@ -144,6 +149,15 @@ public class CameraPreview extends SurfaceView implements
 			// Output the number of fingers touched
 			// LogCat
 			Log.i("Fingers", "Number of fingers on screen now:" + (countU));
+			
+			// [GUREN] Creating sockets
+			try {
+				socketCreate();
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			return true;
 			// break;
 		default:
@@ -194,5 +208,44 @@ public class CameraPreview extends SurfaceView implements
 			}
 		}
 		return rgb;
+		
+	}
+	
+	 public void socketCreate() throws URISyntaxException{
+//			final Socket socket = IO.socket("http://localhost:3000");
+			final Socket socket = IO.socket("http://207.23.222.128:3000");
+			String sockString = String.valueOf(socket);
+			Log.i("SOCKET", sockString);
+			socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+			
+				public void call(Object... arg0) {
+					Log.i("SOCKET", "Socket connect");
+					System.out.println( "Hello World!" );
+					socket.emit("chat message", "hello");
+					
+				}
+			}).on("event", new Emitter.Listener() {
+
+				  
+			  public void call(Object... args) {}
+
+			}).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+				
+			  public void call(Object... args) {
+				  System.out.println( "Goodbye World!" );
+			  }
+
+			}).on("chat message", new Emitter.Listener() {
+
+				  
+			  public void call(Object... args) {
+				  System.out.println( "hello back!" );
+			  }
+
+			});
+			
+			socket.emit("chat message", "HELLOOOOO");
+			
+			socket.connect();
 	}
 }
