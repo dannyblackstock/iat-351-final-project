@@ -22,7 +22,7 @@
   <body>
     <img id="gradient-map" src="gradient-map.png">
 
-    <div>Fingers: <span id="fingerMsg"></span></div>
+    <div>Fingers: <span id="fingerMsg">0</span></div>
     
     <!-- <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
@@ -71,7 +71,7 @@
           pixels[j].g = imgData.data[i-2];
           pixels[j].b = imgData.data[i-1];
           pixels[j].a = imgData.data[i];
-          pixels[j].x = img.width-xi;
+          pixels[j].x = xi;
           pixels[j].y = yi;
 
           xi++;       // go to next pixel
@@ -92,14 +92,27 @@
         var y = -1;
         console.log(color.r+" "+color.g+" "+color.b);
 
+        // track closest
+        var closestColorPixel;
+
+        var smallestTotalDifference = 255*3;
+
         // map from rgb to x,y value
-        for (var i = 0; i < pixels.length; i++) {
-          if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
-            x = pixels[i].x;
-            y = pixels[i].y;
-          };
-        };
-        return x + "," + y;
+        // loop over every 10 pixels to make it faster
+        for (var i = 0; i+10 < pixels.length; i+=10) {
+          // see if the current pixel is further away than the closest so far
+          if (Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b) < smallestTotalDifference) {
+
+              smallestTotalDifference = Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b);
+              // smallestGDifference = (Math.abs(pixels[i].g - color.g)
+              // smallestBDifference = (Math.abs(pixels[i].b - color.b)
+
+              closestColorPixel = pixels[i];
+          }
+          // if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
+          // };
+        }
+        return "x: " + closestColorPixel.x + ", y: " + closestColorPixel.y;
       }
 
       // http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb

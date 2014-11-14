@@ -28,7 +28,7 @@ public class CameraPreview extends SurfaceView implements
 	private Camera mCamera;
 	private Socket socket;
 //	private String nodeServerIP = "http://207.23.222.128:3000";
-	private String nodeServerIP = "http://207.23.221.54:3000"; // Gil's
+	private String nodeServerIP = "http://10.0.0.146:3000"; // Danny's mac @ home
 	private int fingerCount;
 	private int[] myPixels;
 	
@@ -121,7 +121,10 @@ public class CameraPreview extends SurfaceView implements
 //						"The middle pixel has the following RGB (hexadecimal) values:"
 //								+ Integer
 //										.toHexString(myPixels[myPixels.length / 2]));
-				sendHex(myPixels[myPixels.length / 2]);
+				
+				
+				// for some reason myPixels.length / 2 wasn't working so magic number here we go
+				sendHex(myPixels[600]);
 			}
 		});
 	}
