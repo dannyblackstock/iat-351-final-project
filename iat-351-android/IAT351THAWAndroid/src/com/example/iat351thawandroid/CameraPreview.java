@@ -83,7 +83,8 @@ public class CameraPreview extends SurfaceView implements
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ECLAIR) {
 			// 2.1 and before
 			mParam = mCamera.getParameters();
-
+			// TODO: set white balance, set focus to infinity
+			
 			// initialize the variables
 			previewSize = mParam.getPreviewSize();
 
