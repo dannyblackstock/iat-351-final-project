@@ -27,8 +27,7 @@ public class CameraPreview extends SurfaceView implements
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
 	private Socket socket;
-//	private String nodeServerIP = "http://207.23.222.128:3000";
-	private String nodeServerIP = "http://10.0.0.146:3000"; // Danny's mac @ home
+	private String nodeServerIP;
 	private int fingerCount;
 	private int[] myPixels;
 	
@@ -45,15 +44,9 @@ public class CameraPreview extends SurfaceView implements
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		if (!isInEditMode())
-			mActivity = (MainActivity) this.getContext();
 		
-		// [GUREN] Creating sockets
-		try {
-			socketCreate();
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (!isInEditMode()) {
+			mActivity = (CameraPreviewActivity) this.getContext();
 		}
 	}
 
@@ -69,6 +62,14 @@ public class CameraPreview extends SurfaceView implements
 		} catch (IOException e) {
 			mCamera.release();
 			mCamera = null;
+		}
+		
+		// [GUREN] Creating sockets
+		try {
+			socketCreate();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -270,5 +271,9 @@ public class CameraPreview extends SurfaceView implements
 			Log.i("Pixels", valueString);
 //			socket.emit("chat message", "Number of fingers: " + countString);
 			socket.emit("rgbMsg", valueString);
+	 }
+	 
+	 public void setNodeServerIP(String nodeServerIP) {
+		 this.nodeServerIP = nodeServerIP;
 	 }
 }
