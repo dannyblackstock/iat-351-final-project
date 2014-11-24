@@ -87,13 +87,19 @@ public class CameraPreview extends SurfaceView implements
 			
 			// initialize the variables
 			previewSize = mParam.getPreviewSize();
-
+			mParam.setFocusMode("FOCUS_MODE_INFINITY");
+			mParam.setWhiteBalance("WHITE_BALANCE_DAYLIGHT");
+			mParam.setSceneMode("SCENE_MODE_THEATRE");
+			
 			if (portrait) {
 				mParam.set("orientation", "portrait");
 			} else {
 				mParam.set("orientation", "landscape");
 			}
+			
+			// apply the parameters above
 			mCamera.setParameters(mParam);
+			
 		} else {
 			// 2.2 and later
 			if (portrait) {
@@ -122,11 +128,25 @@ public class CameraPreview extends SurfaceView implements
 //				Log.i("Pixels",
 //						"The middle pixel has the following RGB (hexadecimal) values:"
 //								+ Integer
-//										.toHexString(myPixels[myPixels.length / 2]));
-				
+				// .toHexString(myPixels[myPixels.length / 2]));
+				int pixelLocation1 = ((myPixels.length - 1) / 100) - 1000;
+				int pixelLocation2 = ((myPixels.length - 1) / 100) - 500;
+				int pixelLocation3 = ((myPixels.length - 1) / 100) - 750;
+
+				int finalColor = averagePixels(Integer
+						.toHexString(myPixels[pixelLocation1]), Integer
+						.toHexString(myPixels[pixelLocation2]));
+//				
+				Log.i("Pixels",
+						"The pixel at location "
+								+ Integer
+										.toString(pixelLocation3)
+								+ " has the following RGB (hexadecimal) values:"
+								+ Integer
+										.toHexString(myPixels[pixelLocation3]));
 				
 				// for some reason myPixels.length / 2 wasn't working so magic number here we go
-				sendHex(myPixels[600]);
+				sendHex(myPixels[pixelLocation3]);
 			}
 		});
 	}
@@ -276,5 +296,11 @@ public class CameraPreview extends SurfaceView implements
 	 
 	 public void setNodeServerIP(String nodeServerIP) {
 		 this.nodeServerIP = nodeServerIP;
+	 }
+	 
+	 public int averagePixels(String pixel1, String pixel2) {
+		 // TODO: Implement this function
+		 int result = 0;
+		 return result;
 	 }
 }

@@ -73,7 +73,7 @@ var socket = io();
         canvas.height = 600;
         var context = canvas.getContext('2d');
         var img = new Image();
-        img.src = "gradient-map.png";
+        img.src = "gradient-map-danny.png";
         context.drawImage(img, 0, 0);
         imgData = context.getImageData(0, 0, img.width, img.height);
         // console.log(imgData);
