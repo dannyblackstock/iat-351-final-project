@@ -10,15 +10,15 @@ var img = new Image();
 
 // Prepare canvas
 $(document).ready(function() {
-  canvas.width = 600;
-  canvas.height = 600;
+  canvas.width = $(window).width();//600;
+  canvas.height = $(window).height();//600;
   img.src = "gradient-map-danny.png";
 });
 
 // Draw full image for reading in pixel data
 img.onload = function() {
-  context.drawImage(img, 0, 0);
-  var imgData = context.getImageData(0, 0, img.width, img.height);
+  context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+  var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
   // console.log(imgData);
   var j = 0;    // pixel iterator
   var xi = 0;   // x iterator
@@ -35,7 +35,7 @@ img.onload = function() {
     pixels[j].y = yi;
 
     xi++;       // go to next pixel
-    if (xi > img.width) {
+    if (xi > canvas.width) {
       yi++;     // go to next line
       xi = 0;   // reset to first pixel of line
     }
@@ -115,7 +115,8 @@ function updateMask (x, y) {
   context.beginPath();
   context.arc(x, y, 100, 0, 2*Math.PI, false);
   context.clip();
-  context.drawImage(img, 0, 0);
+  context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+  // context.drawImage(img, 0, 0);
   context.restore();
 }
 /* Dummy test code for moving mask
@@ -132,8 +133,8 @@ function RGBtoXY (msg) {
   msg = msg.substring(2);
   var color = hexToRgb(msg);
   // var color = msg.split(","); //.textContent.split(",");
-  var x = -1;
-  var y = -1;
+  // var x = -1;
+  // var y = -1;
   // console.log(color.r+" "+color.g+" "+color.b);
 
   // track closest
