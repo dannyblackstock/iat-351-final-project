@@ -106,13 +106,24 @@ var socket = io();
         updateMask(50, 50);
       };
 
+/* Dummy test code for moving mask
+var xpos = 10;
+$(document).on("mousemove", function() {
+  updateMask(xpos, xpos);
+  console.log(xpos);
+  xpos += 10;
+});
+*/
+
       // Move the mask around depending on android camera location
       function updateMask (x, y) {
-        context.clearRect(0, 0, canvas.width, canvas.height)
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.save();
         context.beginPath();
         context.arc(x, y, 100, 0, 2*Math.PI, false);
         context.clip();
         context.drawImage(img, 0, 0);
+        context.restore();
       }
 
       // Translate RGB values to X,Y position
