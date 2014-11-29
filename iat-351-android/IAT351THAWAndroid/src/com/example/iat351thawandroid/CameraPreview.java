@@ -2,10 +2,7 @@ package com.example.iat351thawandroid;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +17,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
 public class CameraPreview extends SurfaceView implements
 		SurfaceHolder.Callback {
@@ -87,9 +88,6 @@ public class CameraPreview extends SurfaceView implements
 			
 			// initialize the variables
 			previewSize = mParam.getPreviewSize();
-			mParam.setFocusMode("FOCUS_MODE_INFINITY");
-			mParam.setWhiteBalance("WHITE_BALANCE_DAYLIGHT");
-			mParam.setSceneMode("SCENE_MODE_THEATRE");
 			
 			if (portrait) {
 				mParam.set("orientation", "portrait");
@@ -102,11 +100,32 @@ public class CameraPreview extends SurfaceView implements
 			
 		} else {
 			// 2.2 and later
+						
 			if (portrait) {
 				mCamera.setDisplayOrientation(90);
 			} else {
 				mCamera.setDisplayOrientation(0);
 			}
+			
+			mParam = mCamera.getParameters();
+			
+			List<Camera.Size> previewSizes = mParam.getSupportedPreviewSizes();
+
+		    // You need to choose the most appropriate previewSize for your app
+		    Camera.Size previewSize = previewSizes.get(0);// .... select one of previewSizes here (1080x1920
+
+    		mParam.setPreviewSize(previewSize.width, previewSize.height);
+			
+    		// set the exposure and stuff
+			mParam.setFocusMode(Parameters.FOCUS_MODE_INFINITY);
+			mParam.setWhiteBalance(Parameters.WHITE_BALANCE_DAYLIGHT);
+			
+			if (mParam.isAutoExposureLockSupported()) {
+				mParam.setAutoExposureLock(true);
+			}
+			
+			// apply the parameters above
+			mCamera.setParameters(mParam);
 		}
 
 		mCamera.startPreview();
