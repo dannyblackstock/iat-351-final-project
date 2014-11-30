@@ -7,6 +7,7 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
@@ -161,7 +162,7 @@ public class CameraPreview extends SurfaceView implements
 				int pixelLocation2 = ((myPixels.length - 1) / 100) - 500;
 				int pixelLocation3 = ((myPixels.length - 1) / 100) - 750;
 
-				int finalColor = averagePixels(
+				int[] finalRGB = averagePixels(
 						Integer.toHexString(myPixels[pixelLocation1]),
 						Integer.toHexString(myPixels[pixelLocation2]));
 				//
@@ -169,11 +170,11 @@ public class CameraPreview extends SurfaceView implements
 				// "The pixel at location "
 				// + Integer.toString(pixelLocation3)
 				// + " has the following RGB (hexadecimal) values:"
-				//		+ Integer.toHexString(myPixels[pixelLocation3]));
+				// + Integer.toHexString(myPixels[pixelLocation3]));
 
 				// for some reason myPixels.length / 2 wasn't working so magic
 				// number here we go
-				sendHex(myPixels[pixelLocation3]);
+				sendColor(finalRGB);
 			}
 		});
 	}
@@ -318,9 +319,11 @@ public class CameraPreview extends SurfaceView implements
 		socket.emit("fingerMsg", valueString);
 	}
 
-	public void sendHex(Integer value) {
-		String valueString = Integer.toHexString(value);
-		Log.i("Pixels", valueString);
+	public void sendColor(int[] rgbArray) {
+		String valueString = Integer.toString(rgbArray[0]) + ","
+				+ Integer.toString(rgbArray[1]) + ","
+				+ Integer.toString(rgbArray[2]);
+		// Log.i("Pixels", valueString);
 		// socket.emit("chat message", "Number of fingers: " + countString);
 		socket.emit("rgbMsg", valueString);
 	}
@@ -329,10 +332,26 @@ public class CameraPreview extends SurfaceView implements
 		this.nodeServerIP = nodeServerIP;
 	}
 
-	public int averagePixels(String pixel1, String pixel2) {
+	public int[] averagePixels(String pixel1, String pixel2) {
 		// TODO: Implement this function
-		int result = 0;
+
+		int[] pixel1RGB = getRGB(pixel1.substring(2, 8));
+		int[] pixel2RGB = getRGB(pixel2.substring(2, 8));
+
+		int averageR = (pixel1RGB[0] + pixel2RGB[0]) / 2;
+		int averageG = (pixel1RGB[1] + pixel2RGB[1]) / 2;
+		int averageB = (pixel1RGB[2] + pixel2RGB[2]) / 2;
+
+		int[] result = { averageR, averageG, averageB };
 		return result;
+	}
+
+	public static int[] getRGB(final String rgb) {
+		final int[] ret = new int[3];
+		for (int i = 0; i < 3; i++) {
+			ret[i] = Integer.parseInt(rgb.substring(i * 2, i * 2 + 2), 16);
+		}
+		return ret;
 	}
 
 	private class ScaleListener extends
