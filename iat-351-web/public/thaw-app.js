@@ -20,23 +20,32 @@ var radius = 100;
 
 // Prepare canvas
 $(document).ready(function() {
-  canvas.width = $(window).width();//600;
-  canvas.height = $(window).height();//600;
+  // canvas.width = $(window).width();//600;
+  // canvas.height = $(window).height();//600;
+  canvas.width = 1000;//600;
+  canvas.height = 1000;//600;
+  console.log(canvas.width);
 
-  pCanvas.width = $(window).width();
-  pCanvas.height = $(window).height();
+  // pCanvas.width = $(window).width();
+  // pCanvas.height = $(window).height();
+    pCanvas.width = 1000;
+  pCanvas.height = 1000;
  
   pContext.strokeStyle = "#AA0000";
   pContext.lineWidth = 5;
 
   // img.src = "gradient-map-danny.png";
-  img.src = "colourwheel.png";
+  img.src = "colourwheel_2.png";
+  // img.src = "gradient-blue-red.png";
+  // img.src = "gradient-blue-red-green.png";
 });
 
 // Draw full image for reading in pixel data
 img.onload = function() {
   context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+// context.drawImage(img, 0, 0);
   var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+  console.log(imgData.width);
   // console.log(imgData);
   var j = 0;    // pixel iterator
   var xi = 0;   // x iterator
@@ -81,6 +90,7 @@ socket.on('rgbMsg', function(msg) {
   } else {
     radius = 100;
     updateMask(position.x, position.y, radius);
+    $('body').css('background', 'rgb('+parseRGB(msg).r+','+parseRGB(msg).g+','+parseRGB(msg).b+')');
     lastPosition = position;
   }
 
@@ -102,7 +112,7 @@ socket.on('fingerMsg', function(msg) {
       // pContext.strokeStyle = "#AA0000";
   } else {
     $( "#paint-canvas").trigger( "touchup");
-    console.log("NOT FIRST FINGER");
+    // console.log("NOT FIRST FINGER");
   }
 
    if (currentNumFingers == 2){
@@ -161,7 +171,7 @@ socket.on('fingerMsg', function(msg) {
 });
 
 socket.on('scale', function(msg) {
-  console.log(msg);
+  // console.log(msg);
   pContext.lineWidth = msg*10;
 });
 
@@ -175,6 +185,8 @@ function updateMask (x, y, radius) {
   context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
   // context.drawImage(img, 0, 0);
   context.restore();
+
+
 }
 /* Dummy test code for moving mask
   var xpos = 10;
@@ -214,7 +226,8 @@ function RGBtoXY (color) {
     // if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
     // };
   }
-  console.log(closestColorPixel.b);
+  // console.log("x:" + closestColorPixel.x);
+  // console.log(closestColorPixel.y);
   return {
     x: closestColorPixel.x,
     y: closestColorPixel.y 
@@ -274,7 +287,7 @@ function hexToRgb(hex) {
 // Parses rrr,ggg,bbb string into object because.
 function parseRGB (rgb) {
   var rgbSplit = rgb.split(",");
-  console.log(rgbSplit);
+  // console.log(rgbSplit);
   return { 
     r: rgbSplit[0],
     g: rgbSplit[1],
