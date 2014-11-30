@@ -4,15 +4,25 @@ var selectedTool = 0;
 var lastTime = 0;
 var radioButtonArray = ["penRadio", "eraserRadio", "sizeRadio"];
 
+// Mask Canvas for RGB gradient
 var canvas = document.getElementById('gradient-map');
 var context = canvas.getContext('2d');
 var img = new Image();
+
+// 
+
+// Stream display back to android
+var streamCanvas = document.createElement('canvas');
+var streamContext = streamCanvas.getContext('2d');
 
 // Prepare canvas
 $(document).ready(function() {
   canvas.width = $(window).width();//600;
   canvas.height = $(window).height();//600;
   img.src = "gradient-map-danny.png";
+
+  streamCanvas.width = 300;
+  streamCanvas.height = 300;
 });
 
 // Draw full image for reading in pixel data
@@ -51,6 +61,7 @@ socket.on('rgbMsg', function(msg) {
   var position = RGBtoXY(msg);
   $('#rgbMsg').text("x: " + position.x + ", y: " + position.y);
   updateMask(position.x, position.y);
+  streamImage(position.x, position.y);
 });
 
 // Detect finger-counts and switch/use the tools
@@ -127,6 +138,20 @@ function updateMask (x, y) {
     xpos += 10;
   });
 */
+
+function streamImage (x, y) {
+  streamContext.clearRect(0, 0, canvas.width, canvas.height);
+  streamContext.save();
+  streamContext.drawImage(canvas, x, y, streamCanvas.width, streamCanvas.height);
+  streamContext.restore();
+
+  var streamURL = streamCanvas.toDataURL();
+  socket.connect('http://localhost:3000');
+  socket.emit('sendImg', streamURL);
+  // console.log(streamURL);
+  // document.getElementById('stream-url').value=streamURL;
+  // document.getElementById('stream-image').submit();
+}
 
 // Translate RGB values to X,Y position
 function RGBtoXY (msg) {

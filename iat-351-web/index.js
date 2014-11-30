@@ -18,6 +18,10 @@ io.on('connection', function(socket){
   socket.on('fingerMsg', function(msg){
     io.emit('fingerMsg', msg);
   });
+
+  socket.on('sendImg', function(imgURL) {
+    socket.broadcast.emit('getImg', imgURL);
+  });
 });
 
 http.listen(3000, function(){
