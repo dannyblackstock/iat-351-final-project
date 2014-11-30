@@ -156,14 +156,14 @@ public class CameraPreview extends SurfaceView implements
 						.toHexString(myPixels[pixelLocation1]), Integer
 						.toHexString(myPixels[pixelLocation2]));
 //				
-				Log.i("Pixels",
-						"The pixel at location "
-								+ Integer
-										.toString(pixelLocation3)
-								+ " has the following RGB (hexadecimal) values:"
-								+ Integer
-										.toHexString(myPixels[pixelLocation3]));
-				
+//				Log.i("Pixels",
+//						"The pixel at location "
+//								+ Integer
+//										.toString(pixelLocation3)
+//								+ " has the following RGB (hexadecimal) values:"
+//								+ Integer
+//										.toHexString(myPixels[pixelLocation3]));
+//				
 				// for some reason myPixels.length / 2 wasn't working so magic number here we go
 				sendHex(myPixels[pixelLocation3]);
 			}

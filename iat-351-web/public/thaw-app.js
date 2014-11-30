@@ -6,12 +6,21 @@ var radioButtonArray = ["penRadio", "eraserRadio", "sizeRadio"];
 
 var canvas = document.getElementById('gradient-map');
 var context = canvas.getContext('2d');
+
+var pCanvas = document.getElementById('paint-canvas');
+var pContext = pCanvas.getContext('2d');
 var img = new Image();
+
+var position;
+var currentNumFingers;
 
 // Prepare canvas
 $(document).ready(function() {
   canvas.width = $(window).width();//600;
   canvas.height = $(window).height();//600;
+
+  pCanvas.width = $(window).width();
+  pCanvas.height = $(window).height();
   img.src = "gradient-map-danny.png";
 });
 
@@ -44,18 +53,36 @@ img.onload = function() {
   }
 
   updateMask(50, 50);
+
+
+  // canvas touch/mouse event activating
+  $("#paint-canvas").drawMouse();
 };
+
 
 // Show X,Y position of mobile device
 socket.on('rgbMsg', function(msg) {
-  var position = RGBtoXY(msg);
+  position = RGBtoXY(msg);
   $('#rgbMsg').text("x: " + position.x + ", y: " + position.y);
   updateMask(position.x, position.y);
+
+  if (currentNumFingers == 1){
+    // $( "#paint-canvas").trigger( "mousedown");
+    $( "#paint-canvas").trigger( "touchmove");
+    // console.log("FIRST FINGER PRESSED NOW");
+  } else {
+    $( "#paint-canvas").trigger( "touchup");
+    console.log("NOT FIRST FINGER");
+  }
 });
 
 // Detect finger-counts and switch/use the tools
 socket.on('fingerMsg', function(msg) {
-  var currentNumFingers = msg;
+  currentNumFingers = msg;
+
+  if (currentNumFingers == 1){
+      $( "#paint-canvas").trigger( "touchdown");
+  }
 
   // console.log(currentNumFingers);
   $('#finger-msg').text(currentNumFingers);
@@ -164,6 +191,40 @@ function RGBtoXY (msg) {
   }
   // return "x: " + closestColorPixel.x + ", y: " + closestColorPixel.y;
 }
+
+$.fn.drawMouse = function() {
+  var clicked = 0;
+  var start = function(e) {
+    clicked = 1;
+    pContext.beginPath();
+    // x = e.pageX;
+    // y = e.pageY-44;
+    x = position.x;
+    y = position.y;
+    // console.log("START");
+    pContext.moveTo(x,y);
+  };
+  var move = function(e) {
+    if(clicked){
+      // x = e.pageX;
+      // y = e.pageY-44;
+      x = position.x;
+      // console.log("x:" + x);
+      y = position.y;
+       // console.log("moving finger");
+
+      pContext.lineTo(x,y);
+      // console.log("MOVE");
+      pContext.stroke();
+    }
+  };
+  var stop = function(e) {
+    clicked = 0;
+  };
+  $(this).on("touchdown", start);
+  $(this).on("touchmove", move);
+  $(this).on("touchup", stop);
+};
 
 // Helper function Hexadecimal colours to R,G,B values
 // http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
