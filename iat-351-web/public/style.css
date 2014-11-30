@@ -2,8 +2,9 @@ body {
   font-family: sans-serif;
   font-size: 16px;
   color: white;
+  text-shadow: 0 0 2px black;
 }
-img {
+#gradient-map {
   z-index:-8;
   position: fixed; 
   top: 0; 
