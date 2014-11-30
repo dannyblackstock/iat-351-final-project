@@ -9,10 +9,14 @@ var context = canvas.getContext('2d');
 
 var pCanvas = document.getElementById('paint-canvas');
 var pContext = pCanvas.getContext('2d');
+var stroke = pContext.strokeStyle;
 var img = new Image();
 
 var position;
+var lastPosition = {x: 0, y: 0};
 var currentNumFingers;
+var toolSize;
+var radius = 100;
 
 // Prepare canvas
 $(document).ready(function() {
@@ -21,7 +25,12 @@ $(document).ready(function() {
 
   pCanvas.width = $(window).width();
   pCanvas.height = $(window).height();
-  img.src = "gradient-map-danny.png";
+ 
+  pContext.strokeStyle = "#AA0000";
+  pContext.lineWidth = 5;
+
+  // img.src = "gradient-map-danny.png";
+  img.src = "colourwheel.png";
 });
 
 // Draw full image for reading in pixel data
@@ -62,28 +71,44 @@ img.onload = function() {
 
 // Show X,Y position of mobile device
 socket.on('rgbMsg', function(msg) {
-  position = RGBtoXY(msg);
+  position = RGBtoXY(parseRGB(msg));
   $('#rgbMsg').text("x: " + position.x + ", y: " + position.y);
-  updateMask(position.x, position.y);
+  
+  // attempt to relocate position of phone by growing the mask size
+  if (parseRGB(msg).r <= 5 && parseRGB(msg).g <= 5 && parseRGB(msg).b <= 5) {
+    radius+= 250;
+    updateMask(lastPosition.x, lastPosition.y, radius);
+  } else {
+    radius = 100;
+    updateMask(position.x, position.y, radius);
+    lastPosition = position;
+  }
 
   if (currentNumFingers == 1){
     // $( "#paint-canvas").trigger( "mousedown");
     $( "#paint-canvas").trigger( "touchmove");
     // console.log("FIRST FINGER PRESSED NOW");
-  } else {
-    $( "#paint-canvas").trigger( "touchup");
-    console.log("NOT FIRST FINGER");
-  }
+  } 
+
 });
 
 // Detect finger-counts and switch/use the tools
 socket.on('fingerMsg', function(msg) {
   currentNumFingers = msg;
 
+  // painting event emitters
   if (currentNumFingers == 1){
       $( "#paint-canvas").trigger( "touchdown");
+      // pContext.strokeStyle = "#AA0000";
+  } else {
+    $( "#paint-canvas").trigger( "touchup");
+    console.log("NOT FIRST FINGER");
   }
 
+   if (currentNumFingers == 2){
+      $( "#paint-canvas").trigger( "touchdown");
+      pContext.strokeStyle = "#FFFFFF";
+  }
   // console.log(currentNumFingers);
   $('#finger-msg').text(currentNumFingers);
 
@@ -135,13 +160,18 @@ socket.on('fingerMsg', function(msg) {
   }
 });
 
+socket.on('scale', function(msg) {
+  console.log(msg);
+  pContext.lineWidth = msg*10;
+});
+
 // Move the mask around depending on android camera location
-function updateMask (x, y) {
+function updateMask (x, y, radius) {
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.save();
   context.beginPath();
-  context.arc(x, y, 100, 0, 2*Math.PI, false);
-  context.clip();
+  context.arc(x, y, radius, 0, 2*Math.PI, false);
+  // context.clip();
   context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
   // context.drawImage(img, 0, 0);
   context.restore();
@@ -156,10 +186,9 @@ function updateMask (x, y) {
 */
 
 // Translate RGB values to X,Y position
-function RGBtoXY (msg) {
-  msg = msg.substring(2);
-  var color = hexToRgb(msg);
-  // var color = msg.split(","); //.textContent.split(",");
+function RGBtoXY (color) {
+  // msg = msg.substring(2);
+  // var color = hexToRgb(msg);
   // var x = -1;
   // var y = -1;
   // console.log(color.r+" "+color.g+" "+color.b);
@@ -171,7 +200,8 @@ function RGBtoXY (msg) {
 
   // map from rgb to x,y value
   // loop over every 10 pixels to make it faster
-  for (var i = 0; i+10 < pixels.length; i+=10) {
+  // for (var i = 0; i+10 < pixels.length; i+=10) {
+    for (var i = 0; i+5 < pixels.length; i+=5) {
     // see if the current pixel is further away than the closest so far
     if (Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b) < smallestTotalDifference) {
 
@@ -184,7 +214,7 @@ function RGBtoXY (msg) {
     // if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
     // };
   }
-
+  console.log(closestColorPixel.b);
   return {
     x: closestColorPixel.x,
     y: closestColorPixel.y 
@@ -208,9 +238,13 @@ $.fn.drawMouse = function() {
     if(clicked){
       // x = e.pageX;
       // y = e.pageY-44;
-      x = position.x;
-      // console.log("x:" + x);
-      y = position.y;
+
+      // if (position.x != 0 && position.y != 0){
+        x = position.x;
+        y = position.y;
+      // } else {
+      //   // console.log('BLACK');
+      // }
        // console.log("moving finger");
 
       pContext.lineTo(x,y);
@@ -235,4 +269,15 @@ function hexToRgb(hex) {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : null;
+}
+
+// Parses rrr,ggg,bbb string into object because.
+function parseRGB (rgb) {
+  var rgbSplit = rgb.split(",");
+  console.log(rgbSplit);
+  return { 
+    r: rgbSplit[0],
+    g: rgbSplit[1],
+    b: rgbSplit[2]
+  }
 }

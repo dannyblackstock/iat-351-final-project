@@ -18,6 +18,10 @@ io.on('connection', function(socket){
   socket.on('fingerMsg', function(msg){
     io.emit('fingerMsg', msg);
   });
+
+  socket.on('scale', function(msg){
+    io.emit('scale', msg);
+  });
 });
 
 http.listen(3000, function(){
