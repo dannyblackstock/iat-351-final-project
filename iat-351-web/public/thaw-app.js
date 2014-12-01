@@ -206,33 +206,34 @@ function RGBtoXY (color) {
   // console.log(color.r+" "+color.g+" "+color.b);
 
   // track closest
-  var closestColorPixel;
+  // var closestColorPixel;
 
-  var smallestTotalDifference = 255*3;
+  // var smallestTotalDifference = 255*3;
 
   // map from rgb to x,y value
   // loop over every 10 pixels to make it faster
   // for (var i = 0; i+10 < pixels.length; i+=10) {
-    for (var i = 0; i+5 < pixels.length; i+=5) {
+    // for (var i = 0; i+5 < pixels.length; i+=5) {
     // see if the current pixel is further away than the closest so far
-    if (Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b) < smallestTotalDifference) {
+    // if (Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b) < smallestTotalDifference) {
 
-        smallestTotalDifference = Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b);
+        // smallestTotalDifference = Math.abs(pixels[i].r - color.r) + Math.abs(pixels[i].g - color.g) + Math.abs(pixels[i].b - color.b);
         // smallestGDifference = (Math.abs(pixels[i].g - color.g)
         // smallestBDifference = (Math.abs(pixels[i].b - color.b)
 
-        closestColorPixel = pixels[i];
-    }
+        // closestColorPixel = pixels[i];
+    // }
     // if (pixels[i].r == color.r && pixels[i].g == color.g && pixels[i].b == color.b) {
     // };
-  }
+  // }
   // console.log("x:" + closestColorPixel.x);
   // console.log(closestColorPixel.y);
   return {
     // x: closestColorPixel.x,
     // y: closestColorPixel.y 
-      y: 255 - color.b,
-      x: 255 - color.r
+    // scale to the canvas size
+      y: ((canvas.width/255) * (255 - color.b)),
+      x: ((canvas.height/255) *  (255- color.r))
   }
   // return "x: " + closestColorPixel.x + ", y: " + closestColorPixel.y;
 }
