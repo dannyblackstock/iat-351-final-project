@@ -98,7 +98,7 @@ socket.on('rgbMsg', function(msg) {
     // $( "#paint-canvas").trigger( "mousedown");
     $( "#paint-canvas").trigger( "touchmove");
     // console.log("FIRST FINGER PRESSED NOW");
-  } 
+  }
 
 });
 
@@ -115,10 +115,16 @@ socket.on('fingerMsg', function(msg) {
     // console.log("NOT FIRST FINGER");
   }
 
-   if (currentNumFingers == 2){
+  if (currentNumFingers == 2){
       $( "#paint-canvas").trigger( "touchdown");
       pContext.strokeStyle = "#FFFFFF";
   }
+
+  else if (currentNumFingers == 4){
+    // clear the canvas
+      pContext.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
   // console.log(currentNumFingers);
   $('#finger-msg').text(currentNumFingers);
 
@@ -297,3 +303,8 @@ function parseRGB (rgb) {
     b: rgbSplit[2]
   }
 }
+
+// bind event handler to clear button
+document.getElementById('clear').addEventListener('click', function() {
+  pContext.clearRect(0, 0, canvas.width, canvas.height);
+}, false);
