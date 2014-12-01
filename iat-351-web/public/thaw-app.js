@@ -9,6 +9,11 @@ var context = canvas.getContext('2d');
 
 var pCanvas = document.getElementById('paint-canvas');
 var pContext = pCanvas.getContext('2d');
+
+// Stream display back to android
+var streamCanvas = document.createElement('canvas');
+var streamContext = streamCanvas.getContext('2d');
+
 var stroke = pContext.strokeStyle;
 var img = new Image();
 
@@ -33,6 +38,9 @@ $(document).ready(function() {
   // pCanvas.height = $(window).height();
   pCanvas.width = 1000;
   pCanvas.height = 1000;
+
+  streamCanvas.width = 1000;
+  streamCanvas.height = 1000;
 
   setStrokeColor("#00aa00");
   setStrokeSize(5);
@@ -93,6 +101,7 @@ socket.on('rgbMsg', function(msg) {
     $('body').css('background', 'rgb(' + parseRGB(msg).r + ',' + parseRGB(msg).g + ',' + parseRGB(msg).b + ')');
     lastPosition = position;
   }
+  streamImage(0,0);//position.x, position.y);
 
   if (currentNumFingers == 1) {
     // $( "#paint-canvas").trigger( "mousedown");
@@ -199,6 +208,20 @@ function updateMask(x, y, radius) {
       xpos += 10;
     });
   */
+
+function streamImage (x, y) {
+  streamContext.clearRect(0, 0, canvas.width, canvas.height);
+  streamContext.save();
+  streamContext.drawImage(pCanvas, x, y, streamCanvas.width, streamCanvas.height);
+  streamContext.restore();
+
+  var streamURL = streamCanvas.toDataURL();
+  socket.connect('http://localhost:3000');
+  socket.emit('sendImg', streamURL);
+  console.log(streamURL);
+  // document.getElementById('stream-url').value=streamURL;
+  // document.getElementById('stream-image').submit();
+}
 
 // Translate RGB values to X,Y position
 function RGBtoXY(color) {
