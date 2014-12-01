@@ -9,18 +9,29 @@
 
 
     <!-- <input type="button" id="clear" value="Clear"> -->
-    <div id="rgbMsg"></div>
-    <div>Pinch to adjust tool size.</div>
-    <form action = "">
-      <input id="penRadio" type="radio" name="tool" value="pen">
-      <label for="penRadio">3 - Pen</label>
-      <input id="eraserRadio" type="radio" name="tool" value="eraser">
-      <label for="eraserRadio">4 - Eraser</label>
-    </form>
-    <div>5 fingers to clear.</div>
-    <div>Tool color: <span id="color"></span></div>
-    <div>Tool size: <span id="size"></span>px</div>
-    <div id="tool-indicator"></div>
+    <div id="top-bar" class="clearfix">
+      <!-- <div id="rgbMsg"></div> -->
+      <!-- <div>Pinch to adjust tool size.</div> -->
+      <form action = "">
+        
+        <label for="penRadio">
+          3 - Pen
+          <input id="penRadio" type="radio" name="tool" value="pen">
+          <img src="pencil.png">
+        </label>
+        <label for="eraserRadio">
+          4 - Eraser
+          <input id="eraserRadio" type="radio" name="tool" value="eraser">
+          <img src="eraser.png">
+        </label>
+      </form>
+      <!-- <div>5 fingers to clear.</div> -->
+      <div id="tool-status">
+        <div>Tool color: <span id="color"></span></div>
+        <div>Tool size: <span id="size"></span>px</div>
+        <div id="tool-indicator"></div>
+      </div>
+    </div>
 
     <canvas id="paint-canvas"></canvas>
 

@@ -31,7 +31,7 @@ $(document).ready(function() {
   // canvas.width = $(window).width();//600;
   // canvas.height = $(window).height();//600;
   canvas.width = 1000; //600;
-  canvas.height = 1000; //600;
+  canvas.height = 800; //600;
   console.log(canvas.width);
 
   // pCanvas.width = $(window).width();
