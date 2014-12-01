@@ -8,16 +8,16 @@
     <canvas id="gradient-map"><!-- <img src="gradient-map-danny.png"> --></canvas>
 
 
-    <input type="button" id="clear" value="Clear">
-    <div id="rgbMsg"></div>    
+    <!-- <input type="button" id="clear" value="Clear"> -->
+    <div id="rgbMsg"></div>
+    <div>Pinch to adjust tool size.</div>
     <form action = "">
-      <input id="penRadio" type="radio" name="tool" value="pen" checked>
-      <label for="penRadio">Pen</label>
+      <input id="penRadio" type="radio" name="tool" value="pen">
+      <label for="penRadio">3 - Pen</label>
       <input id="eraserRadio" type="radio" name="tool" value="eraser">
-      <label for="eraserRadio">Eraser</label>
-      <input id="sizeRadio" type="radio" name="tool" value="size">
-      <label for="sizeRadio">Size</label>
+      <label for="eraserRadio">4 - Eraser</label>
     </form>
+    <div>5 fingers to clear.</div>
     <div>Tool color: <span id="color"></span></div>
     <div>Tool size: <span id="size"></span>px</div>
     <div id="tool-indicator"></div>

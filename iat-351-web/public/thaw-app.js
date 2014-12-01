@@ -87,27 +87,31 @@ img.onload = function() {
 
 // Show X,Y position of mobile device
 socket.on('rgbMsg', function(msg) {
-  position = RGBtoXY(parseRGB(msg));
+  var incomingColor = parseRGB(msg);
+
+  position = RGBtoXY(incomingColor);
 
   $('#rgbMsg').text("x: " + position.x + ", y: " + position.y);
 
   // attempt to relocate position of phone by growing the mask size
-  if (parseRGB(msg).r <= 5 && parseRGB(msg).g <= 5 && parseRGB(msg).b <= 5) {
+  if (incomingColor.r <= 10 && incomingColor.g <= 10 && incomingColor.b <= 10) {
     radius += 250;
     updateMask(lastPosition.x, lastPosition.y, radius);
   } else {
-    radius = 100;
+    radius = 250;
     updateMask(position.x, position.y, radius);
-    $('body').css('background', 'rgb(' + parseRGB(msg).r + ',' + parseRGB(msg).g + ',' + parseRGB(msg).b + ')');
+    // $('body').css('background', 'rgb(' + parseRGB(msg).r + ',' + parseRGB(msg).g + ',' + parseRGB(msg).b + ')');
+
+    if (currentNumFingers == 1 && position.x < canvas.width - 1 && position.y < canvas.height-1 && Math.abs(lastPosition.x - position.x) < 100 && Math.abs(lastPosition.y - position.y) < 100) {
+      // console.log("x distance: " + Math.abs(lastPosition.x - position.x));
+      // $( "#paint-canvas").trigger( "mousedown");
+      $("#paint-canvas").trigger("touchmove");
+      // console.log("FIRST FINGER PRESSED NOW");
+    }
     lastPosition = position;
   }
   streamImage(0,0);//position.x, position.y);
 
-  if (currentNumFingers == 1) {
-    // $( "#paint-canvas").trigger( "mousedown");
-    $("#paint-canvas").trigger("touchmove");
-    // console.log("FIRST FINGER PRESSED NOW");
-  }
 });
 
 // Detect finger-counts and switch/use the tools
@@ -118,18 +122,16 @@ socket.on('fingerMsg', function(msg) {
   if (currentNumFingers == 1) {
     $("#paint-canvas").trigger("touchdown");
     // pContext.strokeStyle = "#AA0000";
-  } else {
+  }
+  else if (currentNumFingers == 5) {
+    // clear the canvas
+    pContext.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  else {
     $("#paint-canvas").trigger("touchup");
     // console.log("NOT FIRST FINGER");
   }
 
-  if (currentNumFingers == 2) {
-    $("#paint-canvas").trigger("touchdown");
-    setStrokeColor("#FFFFFF");
-  } else if (currentNumFingers == 4) {
-    // clear the canvas
-    pContext.clearRect(0, 0, canvas.width, canvas.height);
-  }
 
   // console.log(currentNumFingers);
   $('#finger-msg').text(currentNumFingers);
@@ -139,28 +141,30 @@ socket.on('fingerMsg', function(msg) {
     $('#fingers-detected').removeClass("show");
   }, 2000);
 
-  if (currentNumFingers > selectedTool) {
-    // set the time a finger change was last detected, and the selected tool
-    lastTime = new Date().getTime();
-    selectedTool = currentNumFingers;
-  } else if (currentNumFingers < selectedTool) {
-    var currentTime = new Date().getTime();
-    var difference = (currentTime - lastTime);
-
-    // console.log("time to release: " + difference + "ms");
-
-    // if the user has held the button for more than the 200ms threshold when they release,
-    // use that as the threshold
-    if (difference > 200) {
-      selectedTool = currentNumFingers;
-
-      // if the user has held down for more than 750ms, then they were probably holding down, so use that.
-      // then use that as the tool
-      if (difference > 600) {
-        selectedTool++;
-      }
-
+  if (currentNumFingers == 3 || currentNumFingers == 4){
+    if (currentNumFingers > selectedTool) {
+      // set the time a finger change was last detected, and the selected tool
       lastTime = new Date().getTime();
+      selectedTool = currentNumFingers;
+    } else if (currentNumFingers < selectedTool) {
+      var currentTime = new Date().getTime();
+      var difference = (currentTime - lastTime);
+
+      // console.log("time to release: " + difference + "ms");
+
+      // if the user has held the button for more than the 200ms threshold when they release,
+      // use that as the threshold
+      if (difference > 200) {
+        selectedTool = currentNumFingers;
+
+        // if the user has held down for more than 750ms, then they were probably holding down, so use that.
+        // then use that as the tool
+        // if (difference > 600) {
+          // selectedTool++;
+        // }
+
+        lastTime = new Date().getTime();
+      }
     }
   }
 
@@ -172,10 +176,13 @@ socket.on('fingerMsg', function(msg) {
   // console.log(selectedTool);
 
   // select the right one
-  if ((selectedTool - 1) < 0) {
+  if (selectedTool == 3) {
     document.getElementById("penRadio").checked = true;
-  } else {
-    document.getElementById(radioButtonArray[selectedTool - 1]).checked = true;
+    setStrokeColor("#00cc00");
+  }
+  else {
+    document.getElementById("eraserRadio").checked = true;
+    setStrokeColor("#000000");
   }
 });
 
@@ -193,7 +200,7 @@ function updateMask(x, y, radius) {
     context.save();
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI, false);
-    // context.clip();
+    context.clip();
     context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
     // context.drawImage(img, 0, 0);
     context.restore();
