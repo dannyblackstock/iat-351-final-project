@@ -31,11 +31,11 @@ $(document).ready(function() {
     pCanvas.width = 1000;
   pCanvas.height = 1000;
  
-  pContext.strokeStyle = "#AA0000";
+  pContext.strokeStyle = "#00aa00";
   pContext.lineWidth = 5;
 
   // img.src = "gradient-map-danny.png";
-  img.src = "colourwheel_2.png";
+  img.src = "red-blue.png";
   // img.src = "gradient-blue-red.png";
   // img.src = "gradient-blue-red-green.png";
 });
@@ -45,7 +45,6 @@ img.onload = function() {
   context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
 // context.drawImage(img, 0, 0);
   var imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-  console.log(imgData.width);
   // console.log(imgData);
   var j = 0;    // pixel iterator
   var xi = 0;   // x iterator
@@ -81,6 +80,7 @@ img.onload = function() {
 // Show X,Y position of mobile device
 socket.on('rgbMsg', function(msg) {
   position = RGBtoXY(parseRGB(msg));
+
   $('#rgbMsg').text("x: " + position.x + ", y: " + position.y);
   
   // attempt to relocate position of phone by growing the mask size
@@ -229,8 +229,10 @@ function RGBtoXY (color) {
   // console.log("x:" + closestColorPixel.x);
   // console.log(closestColorPixel.y);
   return {
-    x: closestColorPixel.x,
-    y: closestColorPixel.y 
+    // x: closestColorPixel.x,
+    // y: closestColorPixel.y 
+      y: 255 - color.b,
+      x: 255 - color.r
   }
   // return "x: " + closestColorPixel.x + ", y: " + closestColorPixel.y;
 }
