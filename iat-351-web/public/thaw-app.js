@@ -34,13 +34,10 @@ $(document).ready(function() {
   pCanvas.width = 1000;
   pCanvas.height = 1000;
 
-  pContext.strokeStyle = "#00aa00";
-  pContext.lineWidth = 5;
+  setStrokeColor("#00aa00");
+  setStrokeSize(5);
 
-  // img.src = "gradient-map-danny.png";
   img.src = "red-blue.png";
-  // img.src = "gradient-blue-red.png";
-  // img.src = "gradient-blue-red-green.png";
 });
 
 // Draw full image for reading in pixel data
@@ -102,7 +99,6 @@ socket.on('rgbMsg', function(msg) {
     $("#paint-canvas").trigger("touchmove");
     // console.log("FIRST FINGER PRESSED NOW");
   }
-
 });
 
 // Detect finger-counts and switch/use the tools
@@ -120,7 +116,7 @@ socket.on('fingerMsg', function(msg) {
 
   if (currentNumFingers == 2) {
     $("#paint-canvas").trigger("touchdown");
-    pContext.strokeStyle = "#FFFFFF";
+    setStrokeColor("#FFFFFF");
   } else if (currentNumFingers == 4) {
     // clear the canvas
     pContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -177,6 +173,9 @@ socket.on('fingerMsg', function(msg) {
 socket.on('scale', function(msg) {
   // console.log(msg);
   pContext.lineWidth = msg * 10;
+  $("#tool-indicator").css("width", pContext.lineWidth);
+  $("#tool-indicator").css("height", pContext.lineWidth);
+  $("#size").text(pContext.lineWidth);
 });
 
 // Move the mask around depending on android camera location
@@ -299,7 +298,20 @@ function parseRGB(rgb) {
     r: rgbSplit[0],
     g: rgbSplit[1],
     b: rgbSplit[2]
-  }
+  };
+}
+
+function setStrokeColor(color) {
+  pContext.strokeStyle = color;
+  $("#color").text(pContext.strokeStyle);
+  $("#tool-indicator").css("background-color", pContext.strokeStyle);
+}
+
+function setStrokeSize(size) {
+  pContext.lineWidth = size;
+  $("#size").text(pContext.lineWidth);
+  $("#tool-indicator").css("width", pContext.lineWidth);
+  $("#tool-indicator").css("height", pContext.lineWidth);
 }
 
 // bind event handler to clear button

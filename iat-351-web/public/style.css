@@ -5,6 +5,12 @@ body {
   text-shadow: 0 0 2px black;
   background-color: black;
 }
+
+#tool-indicator {
+  border-radius: 50px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.75);
+}
+
 #gradient-map {
   z-index:-8;
   position: fixed; 

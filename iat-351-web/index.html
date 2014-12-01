@@ -6,10 +6,10 @@
   </head>
   <body>
     <canvas id="gradient-map"><!-- <img src="gradient-map-danny.png"> --></canvas>
-    
-    <input type="button" id="clear" value="Clear">
-    <div id="fingers-detected">Fingers detected: <span id="finger-msg">0</span></div>
 
+
+    <input type="button" id="clear" value="Clear">
+    <div id="rgbMsg"></div>    
     <form action = "">
       <input id="penRadio" type="radio" name="tool" value="pen" checked>
       <label for="penRadio">Pen</label>
@@ -18,10 +18,13 @@
       <input id="sizeRadio" type="radio" name="tool" value="size">
       <label for="sizeRadio">Size</label>
     </form>
+    <div>Tool color: <span id="color"></span></div>
+    <div>Tool size: <span id="size"></span>px</div>
+    <div id="tool-indicator"></div>
 
     <canvas id="paint-canvas"></canvas>
 
-    <div id="rgbMsg"></div>
+    <div id="fingers-detected">Fingers detected: <span id="finger-msg">0</span></div>
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
