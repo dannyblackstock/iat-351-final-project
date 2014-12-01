@@ -7,6 +7,8 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PreviewCallback;
@@ -15,6 +17,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -31,7 +34,11 @@ public class CameraPreview extends SurfaceView implements
 	private String nodeServerIP;
 	private int fingerCount;
 	private int[] myPixels;
-	
+
+	private Matrix matrix = new Matrix();
+	private float scale = 1f;
+	private ScaleGestureDetector SGD;
+
 	// This variable is responsible for getting and setting the camera settings
 	private Parameters mParam;
 	// this variable stores the camera preview size
@@ -45,7 +52,9 @@ public class CameraPreview extends SurfaceView implements
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		
+
+		SGD = new ScaleGestureDetector(context, new ScaleListener());
+
 		if (!isInEditMode()) {
 			mActivity = (CameraPreviewActivity) this.getContext();
 		}
@@ -64,7 +73,7 @@ public class CameraPreview extends SurfaceView implements
 			mCamera.release();
 			mCamera = null;
 		}
-		
+
 		// [GUREN] Creating sockets
 		try {
 			socketCreate();
@@ -85,45 +94,47 @@ public class CameraPreview extends SurfaceView implements
 			// 2.1 and before
 			mParam = mCamera.getParameters();
 			// TODO: set white balance, set focus to infinity
-			
+
 			// initialize the variables
 			previewSize = mParam.getPreviewSize();
-			
+
 			if (portrait) {
 				mParam.set("orientation", "portrait");
 			} else {
 				mParam.set("orientation", "landscape");
 			}
-			
+
 			// apply the parameters above
 			mCamera.setParameters(mParam);
-			
+
 		} else {
 			// 2.2 and later
-						
+
 			if (portrait) {
 				mCamera.setDisplayOrientation(90);
 			} else {
 				mCamera.setDisplayOrientation(0);
 			}
-			
+
 			mParam = mCamera.getParameters();
-			
+
 			List<Camera.Size> previewSizes = mParam.getSupportedPreviewSizes();
 
-		    // You need to choose the most appropriate previewSize for your app
-		    Camera.Size previewSize = previewSizes.get(0);// .... select one of previewSizes here (1080x1920
+			// You need to choose the most appropriate previewSize for your app
+			Camera.Size previewSize = previewSizes.get(0);// .... select one of
+															// previewSizes here
+															// (1080x1920
 
-    		mParam.setPreviewSize(previewSize.width, previewSize.height);
-			
-    		// set the exposure and stuff
+			mParam.setPreviewSize(previewSize.width, previewSize.height);
+
+			// set the exposure and stuff
 			mParam.setFocusMode(Parameters.FOCUS_MODE_INFINITY);
 			mParam.setWhiteBalance(Parameters.WHITE_BALANCE_DAYLIGHT);
-			
+
 			if (mParam.isAutoExposureLockSupported()) {
 				mParam.setAutoExposureLock(true);
 			}
-			
+
 			// apply the parameters above
 			mCamera.setParameters(mParam);
 		}
@@ -139,33 +150,31 @@ public class CameraPreview extends SurfaceView implements
 				// number of pixels//transforms NV21 pixel data into RGB pixels
 				int rgb[] = new int[frameWidth * frameHeight];
 				// conversion NV21 pixel data into RGB pixels
-				myPixels = decodeYUV420SP(rgb, data, frameWidth,
-						frameHeight);
+				myPixels = decodeYUV420SP(rgb, data, frameWidth, frameHeight);
 
 				// Output the value of the top left pixel in the preview to
 				// LogCat
-//				Log.i("Pixels",
-//						"The middle pixel has the following RGB (hexadecimal) values:"
-//								+ Integer
+				// Log.i("Pixels",
+				// "The middle pixel has the following RGB (hexadecimal) values:"
+				// + Integer
 				// .toHexString(myPixels[myPixels.length / 2]));
 				int pixelLocation1 = ((myPixels.length - 1) / 100) - 1000;
 				int pixelLocation2 = ((myPixels.length - 1) / 100) - 500;
 				int pixelLocation3 = ((myPixels.length - 1) / 100) - 750;
 
-				int finalColor = averagePixels(Integer
-						.toHexString(myPixels[pixelLocation1]), Integer
-						.toHexString(myPixels[pixelLocation2]));
-//				
-//				Log.i("Pixels",
-//						"The pixel at location "
-//								+ Integer
-//										.toString(pixelLocation3)
-//								+ " has the following RGB (hexadecimal) values:"
-//								+ Integer
-//										.toHexString(myPixels[pixelLocation3]));
-//				
-				// for some reason myPixels.length / 2 wasn't working so magic number here we go
-				sendHex(myPixels[pixelLocation3]);
+				int[] finalRGB = averagePixels(
+						Integer.toHexString(myPixels[pixelLocation1]),
+						Integer.toHexString(myPixels[pixelLocation2]));
+				//
+				// Log.i("Pixels",
+				// "The pixel at location "
+				// + Integer.toString(pixelLocation3)
+				// + " has the following RGB (hexadecimal) values:"
+				// + Integer.toHexString(myPixels[pixelLocation3]));
+
+				// for some reason myPixels.length / 2 wasn't working so magic
+				// number here we go
+				sendColor(finalRGB);
 			}
 		});
 	}
@@ -188,22 +197,27 @@ public class CameraPreview extends SurfaceView implements
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		int action = event.getAction();
+		SGD.onTouchEvent(event);
+
 		switch (action & MotionEvent.ACTION_MASK) {
-	    case MotionEvent.ACTION_UP:
-	    case MotionEvent.ACTION_POINTER_UP:
+		case MotionEvent.ACTION_UP:
+		case MotionEvent.ACTION_POINTER_UP:
 			// multi touch!! - touch up
-			fingerCount = event.getPointerCount(); // Number of 'fingers' in this
+			fingerCount = event.getPointerCount(); // Number of 'fingers' in
+													// this
 													// time
 			// Output the number of fingers touched
 			// LogCat
-			Log.i("fingers", "Number of fingers on screen now:" + (fingerCount-1));
-			sendFingers(fingerCount-1);
+			Log.i("fingers", "Number of fingers on screen now:"
+					+ (fingerCount - 1));
+			sendFingers(fingerCount - 1);
 			return true;
 			// break;
-		case MotionEvent.ACTION_DOWN: 
-	    case MotionEvent.ACTION_POINTER_DOWN:
+		case MotionEvent.ACTION_DOWN:
+		case MotionEvent.ACTION_POINTER_DOWN:
 			// multi touch!! - touch down
-	    	fingerCount = event.getPointerCount(); // Number of 'fingers' in this
+			fingerCount = event.getPointerCount(); // Number of 'fingers' in
+													// this
 													// time
 			// Output the number of fingers touched
 			// LogCat
@@ -260,66 +274,107 @@ public class CameraPreview extends SurfaceView implements
 			}
 		}
 		return rgb;
-		
+
 	}
-	
-	 public void socketCreate() throws URISyntaxException{
-//			final Socket socket = IO.socket("http://localhost:3000");
-			socket = IO.socket(nodeServerIP);
-			String sockString = String.valueOf(socket);
-			Log.i("SOCKET", sockString);
-			
-			socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-				
-				public void call(Object... arg0) {
-					Log.i("SOCKET", "Socket connect");
-					System.out.println( "Hello World!" );
-					socket.emit("chat message", "hello");
-					
-				}
-			}).on("event", new Emitter.Listener() {
 
-				  
-			  public void call(Object... args) {}
+	public void socketCreate() throws URISyntaxException {
+		// final Socket socket = IO.socket("http://localhost:3000");
+		socket = IO.socket(nodeServerIP);
+		String sockString = String.valueOf(socket);
+		Log.i("SOCKET", sockString);
 
-			}).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-				
-			  public void call(Object... args) {
-				  System.out.println( "Goodbye World!" );
-			  }
+		socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
 
-			}).on("chat message", new Emitter.Listener() {
+			public void call(Object... arg0) {
+				Log.i("SOCKET", "Socket connect");
+				System.out.println("Hello World!");
+				socket.emit("chat message", "hello");
 
-				  
-			  public void call(Object... args) {
-				  System.out.println( "hello back!" );
-			  }
+			}
+		}).on("event", new Emitter.Listener() {
 
-			});
-			
-			socket.connect();
+			public void call(Object... args) {
+			}
+
+		}).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+
+			public void call(Object... args) {
+				System.out.println("Goodbye World!");
+			}
+
+		}).on("chat message", new Emitter.Listener() {
+
+			public void call(Object... args) {
+				System.out.println("hello back!");
+			}
+
+		});
+
+		socket.connect();
 	}
-	 
-	 public void sendFingers(int value) {
-			String valueString = String.valueOf(value);
-//			socket.emit("chat message", "Number of fingers: " + countString);
-			socket.emit("fingerMsg", valueString);
-	 }
-	 
-	 public void sendHex(Integer value) {
-			String valueString = Integer.toHexString(value);
-			Log.i("Pixels", valueString);
-//			socket.emit("chat message", "Number of fingers: " + countString);
-			socket.emit("rgbMsg", valueString);
-	 }
-	 
-	 public void setNodeServerIP(String nodeServerIP) {
-		 this.nodeServerIP = nodeServerIP;
-	 }
-	 
-	 public int averagePixels(String pixel1, String pixel2) {
-		 // TODO: Implement this function
-		 int result = 0;
-		 return result;
-	 }
+
+	public void sendFingers(int value) {
+		String valueString = String.valueOf(value);
+		// socket.emit("chat message", "Number of fingers: " + countString);
+		socket.emit("fingerMsg", valueString);
+	}
+
+	public void sendColor(int[] rgbArray) {
+		String valueString = Integer.toString(rgbArray[0]) + ","
+				+ Integer.toString(rgbArray[1]) + ","
+				+ Integer.toString(rgbArray[2]);
+		// Log.i("Pixels", valueString);
+		// socket.emit("chat message", "Number of fingers: " + countString);
+		socket.emit("rgbMsg", valueString);
+	}
+
+	public void setNodeServerIP(String nodeServerIP) {
+		this.nodeServerIP = nodeServerIP;
+	}
+
+	public int[] averagePixels(String pixel1, String pixel2) {
+		// TODO: Implement this function
+
+		int[] pixel1RGB = getRGB(pixel1.substring(2, 8));
+		int[] pixel2RGB = getRGB(pixel2.substring(2, 8));
+
+		int averageR = (pixel1RGB[0] + pixel2RGB[0]) / 2;
+		int averageG = (pixel1RGB[1] + pixel2RGB[1]) / 2;
+		int averageB = (pixel1RGB[2] + pixel2RGB[2]) / 2;
+
+		int[] result = { averageR, averageG, averageB };
+		return result;
+	}
+
+	public static int[] getRGB(final String rgb) {
+		final int[] ret = new int[3];
+		for (int i = 0; i < 3; i++) {
+			ret[i] = Integer.parseInt(rgb.substring(i * 2, i * 2 + 2), 16);
+		}
+		return ret;
+	}
+
+	private class ScaleListener extends
+			ScaleGestureDetector.SimpleOnScaleGestureListener {
+		@Override
+		// public boolean onScale(ScaleGestureDetector detector) {
+		// scale *= detector.getScaleFactor();
+		// scale = Math.max(0.1f, Math.min(scale, 5.0f));
+		// matrix.setScale(scale, scale);
+		// // img.setImageMatrix(matrix);
+		// Log.i("Scale", Float.toString(scale));
+		// return true;
+		// }
+		public void onScaleEnd(ScaleGestureDetector detector) {
+			scale *= detector.getScaleFactor();
+			scale = Math.max(0.1f, Math.min(scale, 5.0f));
+			matrix.setScale(scale, scale);
+			// img.setImageMatrix(matrix);
+			String scaleString = Float.toString(scale);
+
+			Log.i("Scale", scaleString);
+			socket.emit("scale", scaleString);
+			// return true;
+		}
+	}
 }
